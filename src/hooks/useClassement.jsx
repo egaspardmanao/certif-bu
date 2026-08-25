@@ -63,9 +63,10 @@ export function useConsultant(id) {
     setLoading(true)
     const [{ data: c }, { data: certs }, { data: missions }] = await Promise.all([
       supabase.from('consultants').select('*').eq('id', id).single(),
-      // vouchers!fk_certif_voucher : désambiguïse la jointure, car il existe 2 FK entre
-      // certifications et vouchers (certifications.voucher_id et vouchers.certification_id).
-      supabase.from('certifications').select('*, vouchers!fk_certif_voucher(code)').eq('consultant_id', id).order('statut'),
+      // Pas de jointure vers vouchers : la table est réservée aux admins côté RLS (le code
+      // voucher ne doit jamais transiter côté consultant). certifications.voucher_id (non null
+      // si un voucher a été attribué) suffit pour afficher l'indicateur "voucher attribué".
+      supabase.from('certifications').select('*').eq('consultant_id', id).order('statut'),
       supabase.from('missions').select('*, projets(id, nom)').eq('consultant_id', id),
     ])
     setConsultant(c ? { ...c, certifications: certs ?? [], missions: missions ?? [] } : null)

@@ -213,8 +213,8 @@ function CertRow({ cert, onVoucher, onDelete }) {
               <span className="text-xs text-slate-500">le {formatDate(cert.date_obtention)}</span>
             )}
           </div>
-          {cert.vouchers?.code && (
-            <div className="mt-1 text-xs text-emerald-600 font-mono">Voucher : {cert.vouchers.code}</div>
+          {cert.voucher_id && (
+            <div className="mt-1 text-xs text-emerald-600">✓ Voucher attribué</div>
           )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

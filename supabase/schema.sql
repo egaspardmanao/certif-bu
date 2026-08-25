@@ -401,7 +401,9 @@ alter table email_settings      enable row level security;
 -- Lecture publique pour toutes les tables (portail authentifié côté app, pas Supabase Auth)
 create policy "lecture publique consultants"        on consultants        for select using (true);
 create policy "lecture publique certifications"     on certifications     for select using (true);
-create policy "lecture publique vouchers"           on vouchers           for select using (true);
+-- Les codes vouchers ne doivent jamais être visibles côté consultant (seulement dans
+-- le panneau Admin) : lecture réservée aux admins, contrairement aux autres tables ci-dessus.
+create policy "lecture admin vouchers"              on vouchers           for select using (is_current_user_admin());
 create policy "lecture publique ressources"         on ressources         for select using (true);
 create policy "lecture publique projets"            on projets            for select using (true);
 create policy "lecture publique missions"           on missions           for select using (true);
