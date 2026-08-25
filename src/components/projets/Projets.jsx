@@ -10,14 +10,23 @@ import { useToast } from '../shared/Toast'
 import Toast from '../shared/Toast'
 
 // --- Statistiques ---
+function StatCard({ value, label, accent }) {
+  return (
+    <div className={`card text-center p-5 border-t-4 ${accent ? 'border-t-gold-500' : 'border-t-brand-600'}`}>
+      <div className={`text-3xl font-display font-bold ${accent ? 'text-gold-500' : 'text-brand-600'}`}>{value}</div>
+      <div className="text-sm text-slate-500 mt-1">{label}</div>
+    </div>
+  )
+}
+
 function Stats({ projets, consultants }) {
   const actifs     = projets.filter(p => !p.est_special && !p.termine).length
   const surBench   = projets.find(p => p.nom === 'BENCH')?.missions?.length ?? 0
   return (
-    <div className="flex gap-6 mb-6 text-sm">
-      <div><span className="text-2xl font-display font-bold text-slate-900">{consultants.length}</span> <span className="text-slate-500">consultants</span></div>
-      <div><span className="text-2xl font-display font-bold text-slate-900">{actifs}</span> <span className="text-slate-500">projets actifs</span></div>
-      <div><span className="text-2xl font-display font-bold text-brand-400">{surBench}</span> <span className="text-slate-500">sur le bench</span></div>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <StatCard value={consultants.length} label="Consultants" />
+      <StatCard value={actifs} label="Projets actifs" accent />
+      <StatCard value={surBench} label="Consultants sur le bench" />
     </div>
   )
 }

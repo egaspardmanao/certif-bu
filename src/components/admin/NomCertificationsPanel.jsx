@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, Search } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 export default function NomCertificationsPanel({ showToast }) {
@@ -9,6 +9,7 @@ export default function NomCertificationsPanel({ showToast }) {
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editNom, setEditNom] = useState('')
+  const [search, setSearch] = useState('')
 
   async function fetchNoms() {
     setLoading(true)
@@ -83,11 +84,20 @@ export default function NomCertificationsPanel({ showToast }) {
         </button>
       </form>
 
+      <div className="relative mb-4 max-w-sm">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <input className="input pl-9" placeholder="Rechercher une certification ou accréditation…"
+          value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+
       {loading ? (
         <div className="text-slate-500 text-sm">Chargement…</div>
       ) : (
         <div className="card divide-y divide-slate-200">
-          {noms.map(item => editingId === item.id ? (
+          {noms.filter(item => item.nom.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+            <div className="p-4 text-slate-500 text-sm text-center">Aucun résultat.</div>
+          )}
+          {noms.filter(item => item.nom.toLowerCase().includes(search.toLowerCase())).map(item => editingId === item.id ? (
             <div key={item.id} className="flex items-center gap-2 px-4 py-2.5">
               <input className="input flex-1" value={editNom} onChange={e => setEditNom(e.target.value)} autoFocus />
               <button onClick={() => handleRename(item)} className="p-2 text-emerald-600 hover:text-emerald-700"><Check size={16} /></button>

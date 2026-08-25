@@ -6,14 +6,21 @@ import { formatDate } from '../../lib/utils'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-function Section({ title, items, emptyMsg }) {
+const ACCENTS = {
+  gold:   { border: 'border-l-gold-500',   heading: 'text-gold-500' },
+  brand:  { border: 'border-l-brand-600',  heading: 'text-brand-600' },
+  amber:  { border: 'border-l-amber-500',  heading: 'text-amber-600' },
+}
+
+function Section({ items, emptyMsg, accent = 'brand' }) {
+  const a = ACCENTS[accent]
   if (items.length === 0) return (
     <div className="card p-6 text-center text-slate-500 text-sm">{emptyMsg}</div>
   )
   return (
     <div className="space-y-2">
       {items.map(item => (
-        <div key={item.id} className="card p-4 flex items-center gap-4 flex-wrap sm:flex-nowrap">
+        <div key={item.id} className={`card border-l-4 ${a.border} p-4 flex items-center gap-4 flex-wrap sm:flex-nowrap`}>
           <Avatar consultant={{ prenom: item.prenom, nom: item.nom, photo_url: item.photo_url }} size="md" />
           <div className="flex-1 min-w-[140px]">
             <div className="font-semibold text-slate-900">{item.prenom} {item.nom}</div>
@@ -65,22 +72,22 @@ export default function CertifiesDuMois() {
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="font-display font-bold text-lg text-slate-900 mb-3 capitalize">
+        <h3 className="font-display font-bold text-lg text-gold-500 mb-3 capitalize">
           ⭐ Certifiés — {moisLabel(now)}
         </h3>
-        <Section items={cettemois} emptyMsg="Aucune certification obtenue ce mois-ci (encore !)." />
+        <Section items={cettemois} emptyMsg="Aucune certification obtenue ce mois-ci (encore !)." accent="gold" />
       </div>
       <div>
-        <h3 className="font-display font-bold text-lg text-slate-900 mb-3 capitalize">
+        <h3 className="font-display font-bold text-lg text-brand-600 mb-3 capitalize">
           Certifiés — {moisLabel(subMonths(now, 1))}
         </h3>
-        <Section items={moisPasse} emptyMsg="Aucune certification obtenue le mois précédent." />
+        <Section items={moisPasse} emptyMsg="Aucune certification obtenue le mois précédent." accent="brand" />
       </div>
       <div>
-        <h3 className="font-display font-bold text-lg text-slate-900 mb-3">
+        <h3 className="font-display font-bold text-lg text-amber-600 mb-3">
           🎯 En préparation ({enCours.length})
         </h3>
-        <Section items={enCours} emptyMsg="Aucune certification en cours de préparation." />
+        <Section items={enCours} emptyMsg="Aucune certification en cours de préparation." accent="amber" />
       </div>
     </div>
   )

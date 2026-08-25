@@ -12,6 +12,10 @@ export default function VouchersPanel({ showToast }) {
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm] = useState({})
 
+  const [certsEnAttente, setCertsEnAttente] = useState([])
+  const [attribuerCertId, setAttribuerCertId] = useState('')
+  const [attribuant, setAttribuant] = useState(false)
+
   async function fetchVouchers() {
     setLoading(true)
     const { data } = await supabase
@@ -22,7 +26,17 @@ export default function VouchersPanel({ showToast }) {
     setLoading(false)
   }
 
-  useEffect(() => { fetchVouchers() }, [])
+  async function fetchCertsEnAttente() {
+    const { data } = await supabase
+      .from('certifications')
+      .select('id, nom_certification, consultants(prenom, nom)')
+      .in('statut', ['Planifiée', 'À retenter'])
+      .is('voucher_id', null)
+      .order('nom_certification')
+    setCertsEnAttente(data ?? [])
+  }
+
+  useEffect(() => { fetchVouchers(); fetchCertsEnAttente() }, [])
 
   async function handleAdd(e) {
     e.preventDefault()
@@ -49,6 +63,24 @@ export default function VouchersPanel({ showToast }) {
       date_debut_validite: v.date_debut_validite ?? '',
       date_fin_validite: v.date_fin_validite ?? '',
     })
+    setAttribuerCertId('')
+  }
+
+  async function handleAttribuer(voucherId) {
+    if (!attribuerCertId) return
+    setAttribuant(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/voucher/attribuer-manuel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ voucherId, certificationId: attribuerCertId }),
+    })
+    setAttribuant(false)
+    if (!res.ok) { const d = await res.json().catch(() => ({})); showToast('Erreur : ' + (d.error ?? 'inconnue'), 'error'); return }
+    setEditingId(null)
+    showToast('Voucher attribué.', 'success')
+    fetchVouchers()
+    fetchCertsEnAttente()
   }
 
   async function handleSaveEdit(id) {
@@ -101,19 +133,39 @@ export default function VouchersPanel({ showToast }) {
         <div className="card divide-y divide-slate-200">
           {vouchers.length === 0 && <div className="p-4 text-slate-500 text-sm text-center">Aucun voucher.</div>}
           {vouchers.map(v => editingId === v.id ? (
-            <div key={v.id} className="flex items-end gap-2 px-4 py-2.5 flex-wrap">
-              <input className="input font-mono flex-1 min-w-[140px]" value={editForm.code}
-                onChange={e => setEditForm(f => ({...f, code: e.target.value}))} />
-              <select className="input w-auto" value={editForm.statut}
-                onChange={e => setEditForm(f => ({...f, statut: e.target.value}))}>
-                {Object.keys(VOUCHER_STATUTS).map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-              <input className="input w-auto" type="date" value={editForm.date_debut_validite}
-                onChange={e => setEditForm(f => ({...f, date_debut_validite: e.target.value}))} />
-              <input className="input w-auto" type="date" value={editForm.date_fin_validite}
-                onChange={e => setEditForm(f => ({...f, date_fin_validite: e.target.value}))} />
-              <button onClick={() => handleSaveEdit(v.id)} className="p-2 text-emerald-600 hover:text-emerald-700"><Check size={16} /></button>
-              <button onClick={() => setEditingId(null)} className="p-2 text-slate-500 hover:text-slate-900"><X size={16} /></button>
+            <div key={v.id} className="px-4 py-2.5 space-y-2">
+              <div className="flex items-end gap-2 flex-wrap">
+                <input className="input font-mono flex-1 min-w-[140px]" value={editForm.code}
+                  onChange={e => setEditForm(f => ({...f, code: e.target.value}))} />
+                <select className="input w-auto" value={editForm.statut}
+                  onChange={e => setEditForm(f => ({...f, statut: e.target.value}))}>
+                  {Object.keys(VOUCHER_STATUTS).map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <input className="input w-auto" type="date" value={editForm.date_debut_validite}
+                  onChange={e => setEditForm(f => ({...f, date_debut_validite: e.target.value}))} />
+                <input className="input w-auto" type="date" value={editForm.date_fin_validite}
+                  onChange={e => setEditForm(f => ({...f, date_fin_validite: e.target.value}))} />
+                <button onClick={() => handleSaveEdit(v.id)} className="p-2 text-emerald-600 hover:text-emerald-700"><Check size={16} /></button>
+                <button onClick={() => setEditingId(null)} className="p-2 text-slate-500 hover:text-slate-900"><X size={16} /></button>
+              </div>
+              {v.statut === 'Disponible' && (
+                <div className="flex items-center gap-2 flex-wrap border-t border-slate-200 pt-2">
+                  <label className="label mb-0 shrink-0">Attribuer à</label>
+                  <select className="input flex-1 min-w-[220px]" value={attribuerCertId}
+                    onChange={e => setAttribuerCertId(e.target.value)}>
+                    <option value="">— Choisir une certification en attente —</option>
+                    {certsEnAttente.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.consultants?.prenom} {c.consultants?.nom} — {c.nom_certification}
+                      </option>
+                    ))}
+                  </select>
+                  <button onClick={() => handleAttribuer(v.id)} disabled={!attribuerCertId || attribuant}
+                    className="btn-primary text-sm py-1.5 px-3 disabled:opacity-50">
+                    {attribuant ? 'Attribution…' : 'Attribuer'}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div key={v.id} className="flex items-center justify-between px-4 py-2.5 text-sm group">

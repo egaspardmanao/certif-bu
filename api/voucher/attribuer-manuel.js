@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '../_lib/supabaseAdmin.js'
 import { getEmailSettings } from '../_lib/emailSettings.js'
 import { sendEmail } from '../_lib/resend.js'
 import { voucherAttribue } from '../_lib/emailTemplates.js'
+import { estAdmin } from '../_lib/adminCheck.js'
 
 // Attribution manuelle d'un voucher par un admin (ex. dérogation à la limite de 4/an),
 // équivalent du Flow RT_Voucher_Email_Attribution qui se déclenche aussi sur ce cas côté Salesforce.
@@ -19,8 +20,8 @@ export default async function handler(req, res) {
   const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token)
   if (userErr || !userData?.user) return res.status(401).json({ error: 'Non authentifié' })
 
-  const { data: caller } = await supabaseAdmin.from('consultants').select('is_admin').eq('email', userData.user.email).maybeSingle()
-  if (!caller?.is_admin) return res.status(403).json({ error: 'Réservé aux administrateurs' })
+  const adminOk = await estAdmin(supabaseAdmin, userData.user.email)
+  if (!adminOk) return res.status(403).json({ error: 'Réservé aux administrateurs' })
 
   const { data: cert } = await supabaseAdmin
     .from('certifications')
