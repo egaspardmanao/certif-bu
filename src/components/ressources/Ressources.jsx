@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, ExternalLink, Trash2, BookOpen, FileText } from 'lucide-react'
+import { Plus, ExternalLink, Trash2, BookOpen, FileText, Search } from 'lucide-react'
 import { useRessources, useNomCertifications } from '../../hooks/useRessources'
 import { useClassement } from '../../hooks/useClassement'
 import Modal from '../shared/Modal'
@@ -88,6 +88,7 @@ export default function Ressources() {
   const noms = useNomCertifications()
   const { consultants } = useClassement()
   const [selected, setSelected]   = useState('')
+  const [sidebarSearch, setSidebarSearch] = useState('')
   const { ressources, loading, refetch } = useRessources(selected)
   const [addOpen, setAddOpen]     = useState(false)
   const [colleguesExpanded, setColleguesExpanded] = useState(false)
@@ -116,15 +117,20 @@ export default function Ressources() {
       {/* Sidebar : liste des certifications */}
       <div className="w-56 shrink-0">
         <div className="section-title">Certifications</div>
+        <div className="relative mb-2">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input className="input pl-8 text-sm py-1.5" placeholder="Rechercher…" value={sidebarSearch}
+            onChange={e => setSidebarSearch(e.target.value)} />
+        </div>
         <div className="space-y-0.5 max-h-[70vh] overflow-y-auto pr-1">
-          {noms.filter(n => n.categorie === 'Certification').map(n => (
+          {noms.filter(n => n.categorie === 'Certification' && n.nom.toLowerCase().includes(sidebarSearch.toLowerCase())).map(n => (
             <button key={n.id} onClick={() => { setSelected(n.nom); setColleguesExpanded(false) }}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected === n.nom ? 'bg-brand-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
               {n.nom.replace('Salesforce Certified ', '')}
             </button>
           ))}
           <div className="text-xs font-bold text-slate-600 px-3 py-2 uppercase tracking-wider mt-2">Accréditations</div>
-          {noms.filter(n => n.categorie === 'Accreditation').map(n => (
+          {noms.filter(n => n.categorie === 'Accreditation' && n.nom.toLowerCase().includes(sidebarSearch.toLowerCase())).map(n => (
             <button key={n.id} onClick={() => { setSelected(n.nom); setColleguesExpanded(false) }}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected === n.nom ? 'bg-gold-500/30 text-gold-300' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
               {n.nom.replace(' Accredited Professional', '')}

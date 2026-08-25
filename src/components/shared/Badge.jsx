@@ -1,5 +1,4 @@
 import { CERT_STATUTS } from '../../lib/constants'
-import { isAccreditation } from '../../lib/utils'
 
 export function StatutBadge({ statut }) {
   const s = CERT_STATUTS[statut] ?? {}
@@ -11,8 +10,8 @@ export function StatutBadge({ statut }) {
   )
 }
 
-export function TypeBadge({ nom }) {
-  return isAccreditation(nom)
-    ? <span className="badge-accred">Accréditation</span>
-    : <span className="badge-cert">Certification</span>
+export function TypeBadge({ type }) {
+  return type === 'Accreditation'
+    ? <span className="badge-accred text-xs">Accréditation</span>
+    : <span className="badge-cert text-xs">Certification</span>
 }

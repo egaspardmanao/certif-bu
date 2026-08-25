@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import Avatar from '../shared/Avatar'
 import { StatutBadge, TypeBadge } from '../shared/Badge'
-import { formatDate, isAccreditation } from '../../lib/utils'
+import { formatDate } from '../../lib/utils'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -21,9 +21,7 @@ function Section({ title, items, emptyMsg }) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <StatutBadge statut={item.statut} />
-            {isAccreditation(item.nom_certification) && (
-              <span className="badge-accred text-xs">Accréditation</span>
-            )}
+            <TypeBadge type={item.type} />
             {item.date_obtention && (
               <span className="text-xs text-slate-500">{formatDate(item.date_obtention)}</span>
             )}
