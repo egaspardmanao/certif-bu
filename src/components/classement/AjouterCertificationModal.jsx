@@ -50,7 +50,7 @@ export default function AjouterCertificationModal({ consultantId, consultantNom,
             {['Certification', 'Accreditation'].map(t => (
               <button key={t} type="button"
                 onClick={() => setForm(f => ({...f, type: t, nom: ''}))}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors ${form.type === t ? 'bg-brand-600 border-brand-500 text-white' : 'border-slate-700 text-slate-400 hover:text-white'}`}>
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors ${form.type === t ? 'bg-brand-600 border-brand-500 text-white' : 'border-slate-200 text-slate-500 hover:text-slate-900'}`}>
                 {t}
               </button>
             ))}
@@ -107,7 +107,7 @@ export default function AjouterCertificationModal({ consultantId, consultantNom,
             onChange={e => setForm(f => ({...f, notes: e.target.value}))} />
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onClose} className="btn-ghost flex-1">Annuler</button>
           <button type="submit" className="btn-primary flex-1" disabled={saving}>

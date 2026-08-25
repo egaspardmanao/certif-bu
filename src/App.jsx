@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Award, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx'
 import { useIsAdmin } from './hooks/useIsAdmin'
 import Login from './components/auth/Login'
@@ -25,7 +25,7 @@ function PortailInner() {
   const tabs = isAdmin ? [...TABS, ADMIN_TAB] : TABS
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-slate-500 text-sm">Chargement…</div>
     </div>
   )
@@ -33,19 +33,14 @@ function PortailInner() {
   if (!session) return <Login />
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
-      <header className="border-b border-slate-800 bg-slate-950/90 backdrop-blur-sm sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <header className="border-b border-slate-200 bg-white/90 backdrop-blur-sm sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-center relative">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-              <Award size={16} className="text-white" />
-            </div>
-            <div>
-              <h1 className="font-display font-bold text-xl text-white leading-none">Certifications BU</h1>
-              <p className="text-slate-500 text-xs">Portail Salesforce Inetum</p>
-            </div>
+            <span className="text-2xl">🏆</span>
+            <h1 className="font-display font-bold text-xl text-slate-900 leading-none">BU Salesforce Inetum</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="absolute right-4 flex items-center gap-3">
             <span className="text-slate-500 text-xs hidden sm:block">{session.user.email}</span>
             <button onClick={signOut} className="btn-ghost text-sm flex items-center gap-1.5 py-1.5 px-3">
               <LogOut size={14} /> Déconnexion
@@ -53,7 +48,7 @@ function PortailInner() {
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex border-b border-slate-800 overflow-x-auto">
+          <div className="flex border-b border-slate-200 overflow-x-auto justify-center">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}>

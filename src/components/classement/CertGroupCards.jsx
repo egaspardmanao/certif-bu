@@ -11,7 +11,7 @@ function CardsSection({ title, groups }) {
         {groups.map(g => (
           <button key={g.nom} onClick={g.onClick}
             className="card p-3 text-left hover:border-brand-500/50 transition-colors">
-            <div className="text-sm font-medium text-white line-clamp-2">{g.nom}</div>
+            <div className="text-sm font-medium text-slate-900 line-clamp-2">{g.nom}</div>
             <div className="text-xs text-brand-400 font-bold mt-1">{g.countLabel}</div>
           </button>
         ))}
@@ -38,7 +38,7 @@ export default function CertGroupCards({ consultants }) {
           <div className="space-y-2">
             {detail.holders.map(h => (
               <div key={h.consultant.id} className="flex items-center justify-between text-sm">
-                <span className="text-white">{h.consultant.prenom} {h.consultant.nom}</span>
+                <span className="text-slate-900">{h.consultant.prenom} {h.consultant.nom}</span>
                 {h.date_obtention && <span className="text-slate-500 text-xs">{formatDate(h.date_obtention)}</span>}
               </div>
             ))}

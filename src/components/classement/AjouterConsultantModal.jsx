@@ -71,7 +71,7 @@ export default function AjouterConsultantModal({ consultant, consultants, onClos
               onChange={e => setForm(f => ({...f, birthdate: e.target.value}))} />
           </div>
         </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onClose} className="btn-ghost flex-1">Annuler</button>
           <button type="submit" className="btn-primary flex-1" disabled={saving}>

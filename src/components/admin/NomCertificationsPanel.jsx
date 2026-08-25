@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 export default function NomCertificationsPanel({ showToast }) {
@@ -7,6 +7,8 @@ export default function NomCertificationsPanel({ showToast }) {
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ nom: '', categorie: 'Certification' })
   const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editNom, setEditNom] = useState('')
 
   async function fetchNoms() {
     setLoading(true)
@@ -36,6 +38,31 @@ export default function NomCertificationsPanel({ showToast }) {
     fetchNoms()
   }
 
+  async function handleRename(item) {
+    const nom = editNom.trim()
+    if (!nom || nom === item.nom) { setEditingId(null); return }
+    const { error } = await supabase.from('nom_certifications').update({ nom }).eq('id', item.id)
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    setEditingId(null)
+    showToast('Renommé.', 'success')
+    fetchNoms()
+  }
+
+  async function handleDelete(item) {
+    const { count } = await supabase.from('certifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('nom_certification', item.nom)
+    if (count > 0) {
+      showToast(`Impossible de supprimer : ${count} certification(s) enregistrée(s) sous ce nom. Désactive-la plutôt.`, 'error')
+      return
+    }
+    if (!confirm(`Supprimer "${item.nom}" du catalogue ?`)) return
+    const { error } = await supabase.from('nom_certifications').delete().eq('id', item.id)
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    showToast('Supprimé.', 'info')
+    fetchNoms()
+  }
+
   return (
     <div>
       <form onSubmit={handleAdd} className="card p-4 mb-4 flex items-end gap-3 flex-wrap">
@@ -59,19 +86,31 @@ export default function NomCertificationsPanel({ showToast }) {
       {loading ? (
         <div className="text-slate-500 text-sm">Chargement…</div>
       ) : (
-        <div className="card divide-y divide-slate-800">
-          {noms.map(item => (
-            <div key={item.id} className="flex items-center justify-between px-4 py-2.5">
+        <div className="card divide-y divide-slate-200">
+          {noms.map(item => editingId === item.id ? (
+            <div key={item.id} className="flex items-center gap-2 px-4 py-2.5">
+              <input className="input flex-1" value={editNom} onChange={e => setEditNom(e.target.value)} autoFocus />
+              <button onClick={() => handleRename(item)} className="p-2 text-emerald-600 hover:text-emerald-700"><Check size={16} /></button>
+              <button onClick={() => setEditingId(null)} className="p-2 text-slate-500 hover:text-slate-900"><X size={16} /></button>
+            </div>
+          ) : (
+            <div key={item.id} className="flex items-center justify-between px-4 py-2.5 group">
               <div>
-                <span className="text-sm text-white">{item.nom}</span>
+                <span className="text-sm text-slate-900">{item.nom}</span>
                 <span className="ml-2 text-xs text-slate-500">{item.categorie}</span>
               </div>
-              <button onClick={() => toggleActif(item)}
-                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
-                  item.actif ? 'bg-emerald-900/50 text-emerald-300' : 'bg-slate-800 text-slate-500'
-                }`}>
-                {item.actif ? 'Actif' : 'Désactivé'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => toggleActif(item)}
+                  className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+                    item.actif ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                  {item.actif ? 'Actif' : 'Désactivé'}
+                </button>
+                <button onClick={() => { setEditingId(item.id); setEditNom(item.nom) }}
+                  className="p-1 text-slate-400 hover:text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity"><Pencil size={13} /></button>
+                <button onClick={() => handleDelete(item)}
+                  className="p-1 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={13} /></button>
+              </div>
             </div>
           ))}
         </div>

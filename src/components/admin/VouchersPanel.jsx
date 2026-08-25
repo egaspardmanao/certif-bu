@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { VOUCHER_STATUTS } from '../../lib/constants'
 import { formatDate } from '../../lib/utils'
@@ -9,6 +9,8 @@ export default function VouchersPanel({ showToast }) {
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ code: '', date_debut_validite: '', date_fin_validite: '' })
   const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState({})
 
   async function fetchVouchers() {
     setLoading(true)
@@ -39,6 +41,37 @@ export default function VouchersPanel({ showToast }) {
     fetchVouchers()
   }
 
+  function startEdit(v) {
+    setEditingId(v.id)
+    setEditForm({
+      code: v.code,
+      statut: v.statut,
+      date_debut_validite: v.date_debut_validite ?? '',
+      date_fin_validite: v.date_fin_validite ?? '',
+    })
+  }
+
+  async function handleSaveEdit(id) {
+    const { error } = await supabase.from('vouchers').update({
+      code: editForm.code.trim(),
+      statut: editForm.statut,
+      date_debut_validite: editForm.date_debut_validite || null,
+      date_fin_validite: editForm.date_fin_validite || null,
+    }).eq('id', id)
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    setEditingId(null)
+    showToast('Voucher mis à jour.', 'success')
+    fetchVouchers()
+  }
+
+  async function handleDelete(id) {
+    if (!confirm('Supprimer ce voucher ?')) return
+    const { error } = await supabase.from('vouchers').delete().eq('id', id)
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    showToast('Voucher supprimé.', 'info')
+    fetchVouchers()
+  }
+
   return (
     <div>
       <form onSubmit={handleAdd} className="card p-4 mb-4 flex items-end gap-3 flex-wrap">
@@ -65,12 +98,27 @@ export default function VouchersPanel({ showToast }) {
       {loading ? (
         <div className="text-slate-500 text-sm">Chargement…</div>
       ) : (
-        <div className="card divide-y divide-slate-800">
+        <div className="card divide-y divide-slate-200">
           {vouchers.length === 0 && <div className="p-4 text-slate-500 text-sm text-center">Aucun voucher.</div>}
-          {vouchers.map(v => (
-            <div key={v.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
+          {vouchers.map(v => editingId === v.id ? (
+            <div key={v.id} className="flex items-end gap-2 px-4 py-2.5 flex-wrap">
+              <input className="input font-mono flex-1 min-w-[140px]" value={editForm.code}
+                onChange={e => setEditForm(f => ({...f, code: e.target.value}))} />
+              <select className="input w-auto" value={editForm.statut}
+                onChange={e => setEditForm(f => ({...f, statut: e.target.value}))}>
+                {Object.keys(VOUCHER_STATUTS).map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input className="input w-auto" type="date" value={editForm.date_debut_validite}
+                onChange={e => setEditForm(f => ({...f, date_debut_validite: e.target.value}))} />
+              <input className="input w-auto" type="date" value={editForm.date_fin_validite}
+                onChange={e => setEditForm(f => ({...f, date_fin_validite: e.target.value}))} />
+              <button onClick={() => handleSaveEdit(v.id)} className="p-2 text-emerald-600 hover:text-emerald-700"><Check size={16} /></button>
+              <button onClick={() => setEditingId(null)} className="p-2 text-slate-500 hover:text-slate-900"><X size={16} /></button>
+            </div>
+          ) : (
+            <div key={v.id} className="flex items-center justify-between px-4 py-2.5 text-sm group">
               <div>
-                <span className="font-mono text-white">{v.code}</span>
+                <span className="font-mono text-slate-900">{v.code}</span>
                 {v.consultants && (
                   <span className="ml-2 text-xs text-slate-500">→ {v.consultants.prenom} {v.consultants.nom}</span>
                 )}
@@ -80,9 +128,13 @@ export default function VouchersPanel({ showToast }) {
                   </span>
                 )}
               </div>
-              <span className={`text-xs px-2.5 py-1 rounded-full ${VOUCHER_STATUTS[v.statut]?.color ?? ''}`}>
-                {v.statut}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs px-2.5 py-1 rounded-full ${VOUCHER_STATUTS[v.statut]?.color ?? ''}`}>
+                  {v.statut}
+                </span>
+                <button onClick={() => startEdit(v)} className="p-1 text-slate-400 hover:text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity"><Pencil size={13} /></button>
+                <button onClick={() => handleDelete(v.id)} className="p-1 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={13} /></button>
+              </div>
             </div>
           ))}
         </div>

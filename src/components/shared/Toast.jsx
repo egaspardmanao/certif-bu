@@ -3,9 +3,9 @@ import { CheckCircle, AlertCircle, Info, X } from 'lucide-react'
 
 const ICONS  = { success: CheckCircle, error: AlertCircle, info: Info }
 const COLORS = {
-  success: 'bg-emerald-900/80 border-emerald-700 text-emerald-200',
-  error:   'bg-red-900/80 border-red-700 text-red-200',
-  info:    'bg-blue-900/80 border-blue-700 text-blue-200',
+  success: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  error:   'bg-red-50 border-red-200 text-red-700',
+  info:    'bg-blue-50 border-blue-200 text-blue-700',
 }
 
 export default function Toast({ message, type = 'info', onClose }) {

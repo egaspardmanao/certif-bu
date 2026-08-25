@@ -77,23 +77,23 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-slate-900/40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl overflow-y-auto">
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white border-l border-slate-200 flex flex-col shadow-2xl overflow-y-auto">
         {/* Header */}
-        <div className="flex items-start gap-4 p-5 border-b border-slate-800">
+        <div className="flex items-start gap-4 p-5 border-b border-slate-200">
           <Avatar consultant={consultant} size="lg" onClick={() => setUploadOpen(true)} />
           <div className="flex-1 min-w-0">
-            <h2 className="font-display font-bold text-xl text-white">{consultant?.prenom} {consultant?.nom}</h2>
-            <p className="text-slate-400 text-sm">{consultant?.pays}</p>
+            <h2 className="font-display font-bold text-xl text-slate-900">{consultant?.prenom} {consultant?.nom}</h2>
+            <p className="text-slate-500 text-sm">{consultant?.pays}</p>
             <div className="flex gap-4 mt-2 text-xs text-slate-500">
               <span><span className="text-brand-400 font-bold text-sm">{certifications.filter(c => c.statut === 'Obtenue').length}</span> certif.</span>
-              <span><span className="text-gold-400 font-bold text-sm">{accreditations.filter(c => c.statut === 'Obtenue').length}</span> accréditations</span>
+              <span><span className="text-gold-500 font-bold text-sm">{accreditations.filter(c => c.statut === 'Obtenue').length}</span> accréditations</span>
             </div>
           </div>
-          <button onClick={() => setEditOpen(true)} title="Modifier le consultant" className="text-slate-500 hover:text-white p-1"><Edit2 size={18} /></button>
-          <button onClick={onClose} className="text-slate-500 hover:text-white p-1"><X size={20} /></button>
+          <button onClick={() => setEditOpen(true)} title="Modifier le consultant" className="text-slate-500 hover:text-slate-900 p-1"><Edit2 size={18} /></button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 p-1"><X size={20} /></button>
         </div>
 
         <div className="flex-1 p-5 space-y-6">
@@ -108,7 +108,7 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
             <div className="flex flex-wrap gap-2">
               {missions.length === 0 && <p className="text-slate-500 text-sm">Aucun projet.</p>}
               {missions.map(m => (
-                <span key={m.id} className="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full">
+                <span key={m.id} className="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full">
                   {m.projets?.nom}
                 </span>
               ))}
@@ -188,7 +188,7 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
       {/* Modale upload photo */}
       {uploadOpen && (
         <Modal title="Photo de profil" onClose={() => setUploadOpen(false)}>
-          <p className="text-sm text-slate-400 mb-4">Choisis une photo (JPG, PNG, max 2 Mo).</p>
+          <p className="text-sm text-slate-500 mb-4">Choisis une photo (JPG, PNG, max 2 Mo).</p>
           <input type="file" accept="image/*" className="input" onChange={handlePhotoUpload} />
           <button onClick={() => setUploadOpen(false)} className="btn-ghost w-full mt-3">Passer cette étape</button>
         </Modal>
@@ -203,7 +203,7 @@ function CertRow({ cert, onVoucher, onDelete }) {
     <div className="card p-3 group">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-white truncate">{cert.nom_certification}</div>
+          <div className="text-sm font-medium text-slate-900 truncate">{cert.nom_certification}</div>
           <div className="flex items-center gap-2 mt-1">
             <StatutBadge statut={cert.statut} />
             {cert.statut === 'Planifiée' && cert.date_previsionnelle && (
@@ -214,18 +214,18 @@ function CertRow({ cert, onVoucher, onDelete }) {
             )}
           </div>
           {cert.vouchers?.code && (
-            <div className="mt-1 text-xs text-emerald-400 font-mono">Voucher : {cert.vouchers.code}</div>
+            <div className="mt-1 text-xs text-emerald-600 font-mono">Voucher : {cert.vouchers.code}</div>
           )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {peutDemanderVoucher && (
             <button onClick={onVoucher} title="Demander un voucher"
-              className="p-1.5 text-slate-500 hover:text-brand-400 transition-colors">
+              className="p-1.5 text-slate-500 hover:text-brand-500 transition-colors">
               <Ticket size={14} />
             </button>
           )}
           <button onClick={onDelete} title="Supprimer"
-            className="p-1.5 text-slate-500 hover:text-red-400 transition-colors">
+            className="p-1.5 text-slate-500 hover:text-red-500 transition-colors">
             <Trash2 size={14} />
           </button>
         </div>

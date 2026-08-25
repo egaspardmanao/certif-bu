@@ -24,11 +24,11 @@ export default function Admin() {
 
   return (
     <div>
-      <div className="flex gap-2 mb-6 border-b border-slate-800">
+      <div className="flex gap-2 mb-6 border-b border-slate-200">
         {SOUS_ONGLETS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setSousOnglet(id)}
             className={`flex items-center gap-1.5 px-3 py-2 text-sm border-b-2 transition-colors ${
-              sousOnglet === id ? 'border-brand-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'
+              sousOnglet === id ? 'border-brand-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}>
             <Icon size={14} /> {label}
           </button>

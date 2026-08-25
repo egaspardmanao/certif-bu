@@ -74,7 +74,7 @@ function AddRessourceModal({ nomCertification, onClose, onAdded }) {
           <textarea className="input resize-none" rows={2} value={form.notes}
             onChange={e => setForm(f => ({...f, notes: e.target.value}))} />
         </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onClose} className="btn-ghost flex-1">Annuler</button>
           <button type="submit" className="btn-primary flex-1" disabled={saving}>{saving ? 'Envoi…' : 'Ajouter'}</button>
@@ -113,26 +113,26 @@ export default function Ressources() {
   const TYPE_ICONS = { Trailhead: '🌟', PDF: '📄', Drive: '📁', Vidéo: '🎬', Site: '🌐', Autre: '📎' }
 
   return (
-    <div className="flex gap-6 h-full">
+    <div className="flex flex-col md:flex-row gap-6 h-full">
       {/* Sidebar : liste des certifications */}
-      <div className="w-56 shrink-0">
+      <div className="w-full md:w-56 shrink-0">
         <div className="section-title">Certifications</div>
         <div className="relative mb-2">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input className="input pl-8 text-sm py-1.5" placeholder="Rechercher…" value={sidebarSearch}
             onChange={e => setSidebarSearch(e.target.value)} />
         </div>
-        <div className="space-y-0.5 max-h-[70vh] overflow-y-auto pr-1">
+        <div className="space-y-0.5 max-h-64 md:max-h-[70vh] overflow-y-auto pr-1">
           {noms.filter(n => n.categorie === 'Certification' && n.nom.toLowerCase().includes(sidebarSearch.toLowerCase())).map(n => (
             <button key={n.id} onClick={() => { setSelected(n.nom); setColleguesExpanded(false) }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected === n.nom ? 'bg-brand-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected === n.nom ? 'bg-brand-700 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
               {n.nom.replace('Salesforce Certified ', '')}
             </button>
           ))}
           <div className="text-xs font-bold text-slate-600 px-3 py-2 uppercase tracking-wider mt-2">Accréditations</div>
           {noms.filter(n => n.categorie === 'Accreditation' && n.nom.toLowerCase().includes(sidebarSearch.toLowerCase())).map(n => (
             <button key={n.id} onClick={() => { setSelected(n.nom); setColleguesExpanded(false) }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected === n.nom ? 'bg-gold-500/30 text-gold-300' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected === n.nom ? 'bg-gold-500/20 text-gold-600' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
               {n.nom.replace(' Accredited Professional', '')}
             </button>
           ))}
@@ -156,9 +156,9 @@ export default function Ressources() {
                 </div>
                 <div className={`flex flex-wrap gap-2 ${colleguesExpanded ? '' : 'max-h-[68px] overflow-hidden'}`}>
                   {colleguesCertifies.map(c => (
-                    <div key={c.id} className="flex items-center gap-1.5 bg-slate-800 rounded-full px-2.5 py-1">
+                    <div key={c.id} className="flex items-center gap-1.5 bg-slate-100 rounded-full px-2.5 py-1">
                       <Avatar consultant={c} size="sm" />
-                      <span className="text-sm text-white">{c.prenom} {c.nom}</span>
+                      <span className="text-sm text-slate-900">{c.prenom} {c.nom}</span>
                       {c.date_obtention && <span className="text-xs text-slate-500">{formatDate(c.date_obtention, 'MMM yyyy')}</span>}
                     </div>
                   ))}
@@ -174,7 +174,7 @@ export default function Ressources() {
 
             {/* Header ressources */}
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-white">
+              <h3 className="font-display font-bold text-lg text-slate-900">
                 {selected.replace('Salesforce Certified ', '')}
               </h3>
               <button onClick={() => setAddOpen(true)} className="btn-primary flex items-center gap-2 text-sm">
@@ -195,19 +195,19 @@ export default function Ressources() {
                   <div key={r.id} className="card p-4 flex items-start gap-3 group">
                     <span className="text-xl">{TYPE_ICONS[r.type] ?? '📎'}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-white">{r.nom}</div>
-                      {r.notes && <div className="text-sm text-slate-400 mt-0.5">{r.notes}</div>}
-                      <div className="text-xs text-slate-600 mt-1">{r.type} · {formatDate(r.created_at)}</div>
+                      <div className="font-semibold text-slate-900">{r.nom}</div>
+                      {r.notes && <div className="text-sm text-slate-500 mt-0.5">{r.notes}</div>}
+                      <div className="text-xs text-slate-500 mt-1">{r.type} · {formatDate(r.created_at)}</div>
                     </div>
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       {(r.url || r.fichier_url) && (
                         <a href={r.url ?? r.fichier_url} target="_blank" rel="noopener noreferrer"
-                          className="p-1.5 text-slate-500 hover:text-brand-400 transition-colors">
+                          className="p-1.5 text-slate-500 hover:text-brand-500 transition-colors">
                           <ExternalLink size={14} />
                         </a>
                       )}
                       <button onClick={() => handleDelete(r.id, r.fichier_url)}
-                        className="p-1.5 text-slate-500 hover:text-red-400 transition-colors">
+                        className="p-1.5 text-slate-500 hover:text-red-500 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
