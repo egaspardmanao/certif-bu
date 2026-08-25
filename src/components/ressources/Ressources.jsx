@@ -144,7 +144,7 @@ export default function Ressources() {
         {!selected ? (
           <div className="flex flex-col items-center justify-center h-48 text-slate-500 gap-2">
             <BookOpen size={32} className="opacity-30" />
-            <p>👈 Sélectionne une certification pour voir ses ressources</p>
+            <p><span className="md:hidden">👆</span><span className="hidden md:inline">👈</span> Sélectionne une certification pour voir ses ressources</p>
           </div>
         ) : (
           <>
