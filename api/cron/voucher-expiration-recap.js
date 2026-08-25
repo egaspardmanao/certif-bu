@@ -40,15 +40,20 @@ export default async function handler(req, res) {
 
   const settings = await getEmailSettings(supabaseAdmin)
 
-  await sendEmail({
-    ...vouchersExpiration({
-      nbCeMois, nbMoisProchain,
-      nbDisponibles: nbDisponibles ?? 0,
-      nbAttribues: nbAttribues ?? 0,
-      settings,
-    }),
-    senderEmail: settings.senderEmail,
-  })
+  try {
+    await sendEmail({
+      ...vouchersExpiration({
+        nbCeMois, nbMoisProchain,
+        nbDisponibles: nbDisponibles ?? 0,
+        nbAttribues: nbAttribues ?? 0,
+        settings,
+      }),
+      senderEmail: settings.senderEmail,
+    })
+  } catch (e) {
+    console.error('Échec email voucher-expiration-recap:', e)
+    return res.status(200).json({ ok: false, nbCeMois, nbMoisProchain, emailError: String(e.message || e) })
+  }
 
   return res.status(200).json({ ok: true, nbCeMois, nbMoisProchain })
 }
