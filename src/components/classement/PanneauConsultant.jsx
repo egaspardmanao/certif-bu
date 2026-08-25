@@ -137,6 +137,7 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
       {addCertOpen && consultant && (
         <AjouterCertificationModal
           consultantId={consultant.id}
+          consultantNom={`${consultant.prenom} ${consultant.nom}`}
           onClose={() => setAddCertOpen(false)}
           onAdded={() => { setAddCertOpen(false); refetch(); showToast('Certification ajoutée !', 'success') }}
         />

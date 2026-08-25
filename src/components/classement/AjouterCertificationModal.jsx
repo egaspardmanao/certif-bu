@@ -3,9 +3,11 @@ import Modal from '../shared/Modal'
 import { useNomCertifications } from '../../hooks/useRessources'
 import { supabase } from '../../lib/supabase'
 
-export default function AjouterCertificationModal({ consultantId, onClose, onAdded }) {
+const AUTRE = '__autre__'
+
+export default function AjouterCertificationModal({ consultantId, consultantNom, onClose, onAdded }) {
   const noms = useNomCertifications()
-  const [form, setForm] = useState({ nom: '', type: 'Certification', statut: 'Planifiée', date_previsionnelle: '', date_obtention: '', notes: '' })
+  const [form, setForm] = useState({ nom: '', nomAutre: '', type: 'Certification', statut: 'Planifiée', date_previsionnelle: '', date_obtention: '', notes: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
@@ -14,13 +16,14 @@ export default function AjouterCertificationModal({ consultantId, onClose, onAdd
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.nom) { setError('Choisis une certification.'); return }
+    const nomFinal = form.nom === AUTRE ? form.nomAutre.trim() : form.nom
+    if (!nomFinal) { setError('Choisis ou saisis une certification.'); return }
     if (form.statut === 'Planifiée' && !form.date_previsionnelle) { setError('Date prévisionnelle obligatoire.'); return }
     if (form.statut === 'Obtenue' && !form.date_obtention) { setError('Date d\'obtention obligatoire.'); return }
     setSaving(true)
     const { error } = await supabase.from('certifications').insert({
       consultant_id:      consultantId,
-      nom_certification:  form.nom,
+      nom_certification:  nomFinal,
       type:               form.type,
       statut:             form.statut,
       date_previsionnelle: form.date_previsionnelle || null,
@@ -28,6 +31,13 @@ export default function AjouterCertificationModal({ consultantId, onClose, onAdd
       notes:              form.notes || null,
     })
     if (error) { setError(error.message); setSaving(false); return }
+    if (form.nom === AUTRE) {
+      fetch('/api/nom-certification-manuel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ valeur: nomFinal, consultantNom }),
+      }).catch(() => {})
+    }
     onAdded()
   }
 
@@ -54,8 +64,18 @@ export default function AjouterCertificationModal({ consultantId, onClose, onAdd
             {(form.type === 'Certification' ? certifications : accreditations).map(n => (
               <option key={n.id} value={n.nom}>{n.nom}</option>
             ))}
+            <option value={AUTRE}>Autre (hors liste)…</option>
           </select>
         </div>
+
+        {form.nom === AUTRE && (
+          <div>
+            <label className="label">Nom (hors liste) *</label>
+            <input className="input" value={form.nomAutre} onChange={e => setForm(f => ({...f, nomAutre: e.target.value}))}
+              placeholder="Saisis le nom exact de la certification" required />
+            <p className="text-xs text-slate-500 mt-1">L'administrateur sera notifié pour ajouter cette valeur à la liste officielle.</p>
+          </div>
+        )}
 
         <div>
           <label className="label">Statut</label>

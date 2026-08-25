@@ -7,16 +7,16 @@ export function useClassement() {
 
   const fetch = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('classement')  // vue SQL
       .select('*')
-    // Charger aussi les certifications pour chaque consultant
+    // Charger aussi les certifications pour chaque consultant.
+    // Pas de filtre .in(consultant_id, ids) ici : avec 200+ consultants l'URL générée
+    // dépasse les limites de longueur (~8000+ caractères), ce qui fait échouer la requête.
     if (data) {
-      const ids = data.map(c => c.id)
       const { data: certs } = await supabase
         .from('certifications')
         .select('*')
-        .in('consultant_id', ids)
         .order('date_obtention', { ascending: false })
       const certsById = {}
       certs?.forEach(c => {

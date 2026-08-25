@@ -107,6 +107,18 @@ export function bonneChance({ consultant, cert }) {
   }
 }
 
+// Email 6 – Valeur de certification personnalisée ajoutée manuellement (envoyé à l'admin technique)
+export function nomCertManuel({ consultantNom, valeur, settings }) {
+  return {
+    to: settings.adminEmail,
+    subject: '[BU Certifications] Nouvelle valeur personnalisée ajoutée',
+    text: `Bonjour,\n\n`
+      + `${consultantNom} a ajouté une valeur personnalisée dans le formulaire de certification :\n\n`
+      + `  → ${valeur}\n\n`
+      + `Si cette certification/accréditation doit être intégrée à la liste officielle, merci de l'ajouter depuis l'onglet Admin du portail.\n\n${SIGNATURE}`,
+  }
+}
+
 // Email 8 – Rappel mensuel des vouchers arrivant à expiration (Responsable Certif uniquement)
 export function vouchersExpiration({ nbCeMois, nbMoisProchain, nbDisponibles, nbAttribues, settings }) {
   return {
