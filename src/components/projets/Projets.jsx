@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { Plus, Trash2, Flag, RotateCcw, Users, Edit2 } from 'lucide-react'
 import { useProjets } from '../../hooks/useProjets'
-import { useClassement } from '../../hooks/useClassement'
+import { useClassement, useToutesLesPersonnes } from '../../hooks/useClassement'
+import { useIsAdmin } from '../../hooks/useIsAdmin'
 import Avatar from '../shared/Avatar'
 import Modal from '../shared/Modal'
 import { supabase } from '../../lib/supabase'
@@ -82,9 +83,10 @@ function ProjetModal({ projet, consultants, onClose, onSaved }) {
 }
 
 // --- Panneau détail projet ---
-function PanneauProjet({ projet, allConsultants, onClose, onUpdated, showToast }) {
+function PanneauProjet({ projet, allConsultants, toutesLesPersonnes, onClose, onUpdated, showToast }) {
   const [addOpen, setAddOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const isAdmin = useIsAdmin()
   const consultantsDuProjet = projet.missions?.map(m => m.consultant).filter(Boolean) ?? []
 
   const consultantsDisponibles = allConsultants.filter(
@@ -186,7 +188,7 @@ function PanneauProjet({ projet, allConsultants, onClose, onUpdated, showToast }
                 <RotateCcw size={14} /> Reprendre le projet
               </button>
             )}
-            {!projet.est_special && (
+            {!projet.est_special && isAdmin && (
               <button onClick={handleDelete} className="btn-danger w-full flex items-center justify-center gap-2 text-sm">
                 <Trash2 size={14} /> Supprimer définitivement
               </button>
@@ -212,7 +214,7 @@ function PanneauProjet({ projet, allConsultants, onClose, onUpdated, showToast }
       )}
 
       {editOpen && (
-        <ProjetModal projet={projet} consultants={allConsultants}
+        <ProjetModal projet={projet} consultants={toutesLesPersonnes}
           onClose={() => setEditOpen(false)}
           onSaved={() => { setEditOpen(false); onUpdated() }} />
       )}
@@ -224,6 +226,7 @@ function PanneauProjet({ projet, allConsultants, onClose, onUpdated, showToast }
 export default function Projets() {
   const { projets, loading, refetch } = useProjets()
   const { consultants }               = useClassement()
+  const { personnes: toutesLesPersonnes } = useToutesLesPersonnes()
   const [selected, setSelected]       = useState(null)
   const [addOpen, setAddOpen]         = useState(false)
   const { toast, show, hide }         = useToast()
@@ -273,6 +276,7 @@ export default function Projets() {
         <PanneauProjet
           projet={selected}
           allConsultants={consultants}
+          toutesLesPersonnes={toutesLesPersonnes}
           onClose={() => setSelected(null)}
           onUpdated={() => { refetch(); setSelected(null) }}
           showToast={show}
@@ -281,7 +285,7 @@ export default function Projets() {
 
       {/* Modal nouveau projet */}
       {addOpen && (
-        <ProjetModal consultants={consultants}
+        <ProjetModal consultants={toutesLesPersonnes}
           onClose={() => setAddOpen(false)}
           onSaved={() => { setAddOpen(false); refetch(); show('Projet créé !', 'success') }} />
       )}

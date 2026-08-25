@@ -20,6 +20,8 @@ create table if not exists consultants (
   actif                  boolean not null default true,
   hide_for_community     boolean not null default false,  -- masqué du classement
   manager_id             uuid references consultants(id) on delete set null,
+  birthdate              date,                             -- date de naissance (saisie à la création)
+  is_admin               boolean not null default false,  -- droits admin (staff BU), voir §3.1 doc SF
   vouchers_annee_civile  integer not null default 0,      -- compteur annuel (reset 1er janv.)
   photo_url              text,                             -- Supabase Storage URL
   pays                   text not null default 'France',
@@ -409,14 +411,29 @@ create policy "lecture publique email_settings"     on email_settings     for se
 -- Écriture : authentifié Supabase (magic link email)
 create policy "ecriture auth consultants"       on consultants        for all using (auth.role() = 'authenticated');
 create policy "ecriture auth certifications"    on certifications     for all using (auth.role() = 'authenticated');
-create policy "ecriture auth vouchers"          on vouchers           for all using (auth.role() = 'authenticated');
 create policy "ecriture auth ressources"        on ressources         for all using (auth.role() = 'authenticated');
-create policy "ecriture auth projets"           on projets            for all using (auth.role() = 'authenticated');
 create policy "ecriture auth missions"          on missions           for all using (auth.role() = 'authenticated');
-create policy "ecriture auth email_settings"    on email_settings     for all using (auth.role() = 'authenticated');
 
--- nom_certifications : lecture seule pour tous, modifiable uniquement via service role
-create policy "no ecriture nom certifications"  on nom_certifications for all using (false);
+-- Projets : insert/update ouverts aux utilisateurs authentifiés, suppression réservée aux admins
+-- (équivalent de la restriction "utilisateur interne" côté Salesforce, §3.1 doc migration).
+create function is_current_user_admin() returns boolean
+language sql stable security definer
+as $$
+  select exists (
+    select 1 from consultants
+    where email = (select email from auth.users where id = auth.uid())
+    and is_admin = true
+  );
+$$;
+
+create policy "insert auth projets" on projets for insert with check (auth.role() = 'authenticated');
+create policy "update auth projets" on projets for update using (auth.role() = 'authenticated');
+create policy "suppression admin projets" on projets for delete using (is_current_user_admin());
+
+-- Config sensible (email_settings, vouchers, nom_certifications) : écriture réservée aux admins.
+create policy "ecriture admin email_settings"     on email_settings     for all using (is_current_user_admin());
+create policy "ecriture admin vouchers"           on vouchers           for all using (is_current_user_admin());
+create policy "ecriture admin nom_certifications" on nom_certifications for all using (is_current_user_admin());
 
 -- ============================================================
 -- DONNÉES INITIALES : liste des certifications (Global Value Set)

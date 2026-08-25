@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Award, LogOut } from 'lucide-react'
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx'
+import { useIsAdmin } from './hooks/useIsAdmin'
 import Login from './components/auth/Login'
 import Classement from './components/classement/Classement'
 import CertifiesDuMois from './components/certifies/CertifiesDuMois'
 import Ressources from './components/ressources/Ressources'
 import Projets from './components/projets/Projets'
+import Admin from './components/admin/Admin'
 
 const TABS = [
   { id: 'classement', label: '🏅 Classement & Podium', short: 'Classement' },
@@ -14,9 +16,13 @@ const TABS = [
   { id: 'projets',    label: '📁 Projets de la BU',     short: 'Projets' },
 ]
 
+const ADMIN_TAB = { id: 'admin', label: '⚙️ Admin', short: 'Admin' }
+
 function PortailInner() {
   const { session, loading, signOut } = useAuth()
+  const isAdmin = useIsAdmin()
   const [activeTab, setActiveTab] = useState('classement')
+  const tabs = isAdmin ? [...TABS, ADMIN_TAB] : TABS
 
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -48,7 +54,7 @@ function PortailInner() {
         </div>
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex border-b border-slate-800 overflow-x-auto">
-            {TABS.map(tab => (
+            {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}>
                 <span className="hidden sm:inline">{tab.label}</span>
@@ -63,6 +69,7 @@ function PortailInner() {
         {activeTab === 'certifies'  && <CertifiesDuMois />}
         {activeTab === 'ressources' && <Ressources />}
         {activeTab === 'projets'    && <Projets />}
+        {activeTab === 'admin'      && <Admin />}
       </main>
     </div>
   )

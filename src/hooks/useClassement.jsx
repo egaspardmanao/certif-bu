@@ -32,6 +32,28 @@ export function useClassement() {
   return { consultants, loading, refetch: fetch }
 }
 
+// Tous les consultants actifs, y compris ceux masqués du classement (hide_for_community = true).
+// Utilisé pour les pickers Manager/Responsable, qui doivent pouvoir référencer des managers
+// ou responsables masqués du classement collectif (équivalent getToutesLesPersonnes()).
+export function useToutesLesPersonnes() {
+  const [personnes, setPersonnes] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetch = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('consultants')
+      .select('id, prenom, nom')
+      .eq('actif', true)
+      .order('nom')
+    setPersonnes(data ?? [])
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { fetch() }, [fetch])
+  return { personnes, loading, refetch: fetch }
+}
+
 export function useConsultant(id) {
   const [consultant, setConsultant] = useState(null)
   const [loading, setLoading] = useState(true)

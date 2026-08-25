@@ -8,11 +8,13 @@ import { formatDate, isAccreditation } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { CERT_STATUTS } from '../../lib/constants'
 import AjouterCertificationModal from './AjouterCertificationModal'
+import AjouterConsultantModal from './AjouterConsultantModal'
 
-export default function PanneauConsultant({ consultantId, onClose, onUpdated, showToast }) {
+export default function PanneauConsultant({ consultantId, onClose, onUpdated, showToast, toutesLesPersonnes }) {
   const { consultant, loading, refetch } = useConsultant(consultantId)
   const [addCertOpen, setAddCertOpen] = useState(false)
   const [uploadOpen, setUploadOpen]   = useState(false)
+  const [editOpen, setEditOpen]       = useState(false)
 
   async function handleDemanderVoucher(certId) {
     const { data: { session } } = await supabase.auth.getSession()
@@ -78,6 +80,7 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
               <span><span className="text-gold-400 font-bold text-sm">{accreditations.filter(c => c.statut === 'Obtenue').length}</span> accréditations</span>
             </div>
           </div>
+          <button onClick={() => setEditOpen(true)} title="Modifier le consultant" className="text-slate-500 hover:text-white p-1"><Edit2 size={18} /></button>
           <button onClick={onClose} className="text-slate-500 hover:text-white p-1"><X size={20} /></button>
         </div>
 
@@ -136,6 +139,16 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
           consultantId={consultant.id}
           onClose={() => setAddCertOpen(false)}
           onAdded={() => { setAddCertOpen(false); refetch(); showToast('Certification ajoutée !', 'success') }}
+        />
+      )}
+
+      {/* Modale édition consultant */}
+      {editOpen && consultant && (
+        <AjouterConsultantModal
+          consultant={consultant}
+          consultants={toutesLesPersonnes ?? []}
+          onClose={() => setEditOpen(false)}
+          onAdded={() => { setEditOpen(false); refetch(); onUpdated(); showToast('Consultant mis à jour !', 'success') }}
         />
       )}
 

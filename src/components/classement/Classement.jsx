@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Search, Plus, Trophy, ArrowUpDown } from 'lucide-react'
-import { useClassement } from '../../hooks/useClassement'
+import { useClassement, useToutesLesPersonnes } from '../../hooks/useClassement'
 import Avatar from '../shared/Avatar'
 import PanneauConsultant from './PanneauConsultant'
 import AjouterConsultantModal from './AjouterConsultantModal'
@@ -35,6 +35,7 @@ function Podium({ top3 }) {
 
 export default function Classement() {
   const { consultants, loading, refetch } = useClassement()
+  const { personnes: toutesLesPersonnes } = useToutesLesPersonnes()
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState('nb_certifications')
   const [sortAsc, setSortAsc]     = useState(false)
@@ -135,13 +136,14 @@ export default function Classement() {
           onClose={() => setSelected(null)}
           onUpdated={() => { refetch(); show('Mis à jour !', 'success') }}
           showToast={show}
+          toutesLesPersonnes={toutesLesPersonnes}
         />
       )}
 
       {/* Modale ajout consultant */}
       {addOpen && (
         <AjouterConsultantModal
-          consultants={consultants}
+          consultants={toutesLesPersonnes}
           onClose={() => setAddOpen(false)}
           onAdded={() => { setAddOpen(false); refetch(); show('Consultant ajouté !', 'success') }}
         />
