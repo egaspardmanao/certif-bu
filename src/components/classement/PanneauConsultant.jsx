@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, Plus, Ticket, Edit2, Trash2 } from 'lucide-react'
 import { useConsultant } from '../../hooks/useClassement'
 import { useProjets } from '../../hooks/useProjets'
+import { useIsAdmin } from '../../hooks/useIsAdmin'
 import Avatar from '../shared/Avatar'
 import { StatutBadge, TypeBadge } from '../shared/Badge'
 import Modal from '../shared/Modal'
@@ -14,6 +15,7 @@ import AjouterConsultantModal from './AjouterConsultantModal'
 export default function PanneauConsultant({ consultantId, onClose, onUpdated, showToast, toutesLesPersonnes, openPhotoStep }) {
   const { consultant, loading, refetch } = useConsultant(consultantId)
   const { projets } = useProjets()
+  const isAdmin = useIsAdmin()
   const [addCertOpen, setAddCertOpen] = useState(false)
   const [uploadOpen, setUploadOpen]   = useState(!!openPhotoStep)
   const [editOpen, setEditOpen]       = useState(false)
@@ -44,6 +46,15 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
     await supabase.from('certifications').delete().eq('id', certId)
     showToast('Certification supprimée.', 'success')
     refetch()
+  }
+
+  async function handleDeleteConsultant() {
+    if (!confirm(`Supprimer définitivement ${consultant.prenom} ${consultant.nom} ? Ses certifications et missions seront supprimées.`)) return
+    const { error } = await supabase.from('consultants').delete().eq('id', consultant.id)
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    showToast('Consultant supprimé.', 'info')
+    onUpdated()
+    onClose()
   }
 
   async function handleAddMission(projetId) {
@@ -144,6 +155,15 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
                     onDelete={() => handleDeleteCert(cert.id)} />
                 ))}
               </div>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="border-t border-slate-200 pt-4">
+              <button onClick={handleDeleteConsultant}
+                className="btn-danger w-full flex items-center justify-center gap-2 text-sm">
+                <Trash2 size={14} /> Supprimer définitivement
+              </button>
             </div>
           )}
         </div>
