@@ -55,9 +55,8 @@ create table if not exists certifications (
   constraint chk_date_prev check (
     statut != 'Planifiée' or date_previsionnelle is not null
   ),
-  constraint chk_date_obtention check (
-    statut != 'Obtenue' or date_obtention is not null
-  ),
+  -- Pas de contrainte sur date_obtention pour statut 'Obtenue' : ce champ n'était pas
+  -- systématiquement renseigné côté Salesforce, l'import initial contient des lignes sans date.
   constraint chk_pas_voucher_accred check (
     type != 'Accreditation' or voucher_id is null
   )
