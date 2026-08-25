@@ -39,11 +39,8 @@ function PortailInner() {
           <div className="absolute inset-0 bg-gradient-to-r from-gold-500/10 to-transparent" />
           <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-center relative">
             <div className="flex items-center gap-3">
-              <span className="text-4xl drop-shadow">🏆</span>
-              <div>
-                <h1 className="font-display font-bold text-2xl sm:text-3xl text-white leading-none tracking-tight">BU Salesforce Inetum</h1>
-                <p className="text-brand-100 text-xs sm:text-sm mt-1">Portail des certifications</p>
-              </div>
+              <span className="text-4xl leading-none drop-shadow">🏆</span>
+              <h1 className="font-display font-bold text-2xl sm:text-3xl text-white leading-none tracking-tight">BU Salesforce Inetum</h1>
             </div>
             <div className="absolute right-4 flex items-center gap-3">
               <span className="text-brand-100 text-xs hidden sm:block">{session.user.email}</span>
