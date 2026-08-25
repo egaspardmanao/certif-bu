@@ -48,7 +48,7 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
     const ext  = file.name.split('.').pop()
     const path = `photos/${consultant.id}.${ext}`
     const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
-    if (upErr) { showToast('Erreur upload photo.', 'error'); return }
+    if (upErr) { showToast('Erreur upload photo : ' + upErr.message, 'error'); return }
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
     await supabase.from('consultants').update({ photo_url: publicUrl }).eq('id', consultant.id)
     showToast('Photo mise à jour !', 'success')
