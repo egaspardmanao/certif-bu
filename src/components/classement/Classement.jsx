@@ -98,7 +98,6 @@ export default function Classement() {
                   <th className="px-3 py-2 text-left text-xs font-bold text-slate-400 uppercase tracking-wider w-10">#</th>
                   <SortBtn field="nom" label="Consultant" />
                   <SortBtn field="nb_certifications" label="Certifications" />
-                  <SortBtn field="nb_accreditations" label="Accréditations" />
                   <SortBtn field="prochaine_planifiee" label="Planifiée" />
                   <SortBtn field="derniere_obtention" label="Dernière obtention" />
                 </tr>
@@ -115,13 +114,12 @@ export default function Classement() {
                       </div>
                     </td>
                     <td className="px-3 py-2.5 text-center font-bold text-brand-400">{c.nb_certifications}</td>
-                    <td className="px-3 py-2.5 text-center text-gold-400">{c.nb_accreditations || '—'}</td>
                     <td className="px-3 py-2.5 text-slate-400 text-xs">{c.prochaine_planifiee ?? '—'}</td>
                     <td className="px-3 py-2.5 text-slate-400 text-xs">{c.derniere_obtention ?? '—'}</td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={6} className="px-3 py-12 text-center text-slate-500">Aucun consultant trouvé.</td></tr>
+                  <tr><td colSpan={5} className="px-3 py-12 text-center text-slate-500">Aucun consultant trouvé.</td></tr>
                 )}
               </tbody>
             </table>
