@@ -15,7 +15,7 @@ export default function AjouterConsultantModal({ consultant, consultants, onClos
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.prenom || !form.nom) { setError('Prénom et nom obligatoires.'); return }
+    if (!form.prenom || !form.nom || !form.email) { setError('Prénom, nom et email obligatoires.'); return }
     setSaving(true)
     const payload = {
       prenom:     form.prenom.trim(),
@@ -51,9 +51,9 @@ export default function AjouterConsultantModal({ consultant, consultants, onClos
           </div>
         </div>
         <div>
-          <label className="label">Email (optionnel)</label>
+          <label className="label">Email *</label>
           <input className="input" type="email" placeholder="pour la connexion au portail" value={form.email}
-            onChange={e => setForm(f => ({...f, email: e.target.value}))} />
+            onChange={e => setForm(f => ({...f, email: e.target.value}))} required />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
