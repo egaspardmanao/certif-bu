@@ -88,6 +88,17 @@ export default function Classement() {
         </button>
       </div>
 
+      {/* Tri (mobile uniquement : les en-têtes du tableau sont trop petits pour être tapés au doigt) */}
+      <div className="flex sm:hidden items-center gap-2 mb-3 text-xs">
+        <span className="text-slate-500">Trier par</span>
+        <button onClick={() => handleSort('nb_certifications')} className="btn-ghost px-2.5 py-1">
+          Rang <ArrowUpDown size={11} className="inline ml-1" />
+        </button>
+        <button onClick={() => handleSort('nom')} className="btn-ghost px-2.5 py-1">
+          Consultant <ArrowUpDown size={11} className="inline ml-1" />
+        </button>
+      </div>
+
       {/* Table */}
       {loading ? (
         <div className="text-center py-16 text-slate-500">Chargement…</div>
