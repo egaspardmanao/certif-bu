@@ -1,8 +1,30 @@
-import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Plus, Pencil, Trash2, Check, X, Upload, Download } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { VOUCHER_STATUTS } from '../../lib/constants'
 import { formatDate } from '../../lib/utils'
+
+const CSV_TEMPLATE = 'code,date_debut_validite,date_fin_validite\nSFL234680B3D,2026-01-01,2026-12-31\n'
+
+// Parseur CSV minimal : une valeur par cellule, pas de virgule/guillemet imbriqué à gérer
+// pour ce cas d'usage (code voucher + 2 dates ISO).
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+  if (lines.length === 0) return []
+  const header = lines[0].split(',').map(h => h.trim().toLowerCase())
+  const idxCode = header.indexOf('code')
+  if (idxCode === -1) throw new Error('Colonne "code" manquante dans le CSV.')
+  const idxDebut = header.indexOf('date_debut_validite')
+  const idxFin   = header.indexOf('date_fin_validite')
+  return lines.slice(1).map(line => {
+    const cells = line.split(',').map(c => c.trim())
+    return {
+      code: cells[idxCode],
+      date_debut_validite: idxDebut !== -1 ? (cells[idxDebut] || null) : null,
+      date_fin_validite:   idxFin   !== -1 ? (cells[idxFin]   || null) : null,
+    }
+  }).filter(row => row.code)
+}
 
 export default function VouchersPanel({ showToast }) {
   const [vouchers, setVouchers] = useState([])
@@ -17,6 +39,8 @@ export default function VouchersPanel({ showToast }) {
   const [attribuerConsultantId, setAttribuerConsultantId] = useState('')
   const [attribuerCertId, setAttribuerCertId] = useState('')
   const [attribuant, setAttribuant] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const fileInputRef = useRef(null)
 
   async function fetchVouchers() {
     setLoading(true)
@@ -60,6 +84,38 @@ export default function VouchersPanel({ showToast }) {
     setForm({ code: '', date_debut_validite: '', date_fin_validite: '' })
     showToast('Voucher créé.', 'success')
     fetchVouchers()
+  }
+
+  function handleDownloadTemplate() {
+    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'template_vouchers.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function handleImportCsv(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    try {
+      const text = await file.text()
+      const rows = parseCsv(text)
+      if (rows.length === 0) { showToast('Aucune ligne valide dans le CSV.', 'error'); return }
+      const { data, error } = await supabase.from('vouchers')
+        .insert(rows.map(r => ({ ...r, statut: 'Disponible' })))
+        .select('id')
+      if (error) { showToast('Erreur import : ' + error.message, 'error'); return }
+      showToast(`${data.length} voucher(s) importé(s).`, 'success')
+      fetchVouchers()
+    } catch (err) {
+      showToast('Erreur import : ' + err.message, 'error')
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   function startEdit(v) {
@@ -141,6 +197,17 @@ export default function VouchersPanel({ showToast }) {
         </button>
       </form>
 
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <button onClick={handleDownloadTemplate} className="btn-ghost text-sm flex items-center gap-2 py-1.5 px-3">
+          <Download size={14} /> Télécharger le template CSV
+        </button>
+        <button onClick={() => fileInputRef.current?.click()} disabled={importing}
+          className="btn-ghost text-sm flex items-center gap-2 py-1.5 px-3 disabled:opacity-50">
+          <Upload size={14} /> {importing ? 'Import…' : 'Importer un CSV'}
+        </button>
+        <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={handleImportCsv} />
+      </div>
+
       {loading ? (
         <div className="text-slate-500 text-sm">Chargement…</div>
       ) : (
@@ -162,36 +229,34 @@ export default function VouchersPanel({ showToast }) {
                 <button onClick={() => handleSaveEdit(v.id)} className="p-2 text-emerald-600 hover:text-emerald-700"><Check size={16} /></button>
                 <button onClick={() => setEditingId(null)} className="p-2 text-slate-500 hover:text-slate-900"><X size={16} /></button>
               </div>
-              {v.statut === 'Disponible' && (
-                <div className="flex items-center gap-2 flex-wrap border-t border-slate-200 pt-2">
-                  <label className="label mb-0 shrink-0">Attribuer à</label>
-                  <select className="input flex-1 min-w-[180px]" value={attribuerConsultantId}
-                    onChange={e => handleAttribuerConsultantChange(e.target.value)}>
-                    <option value="">— Choisir un consultant —</option>
-                    {consultantsList.map(c => (
-                      <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
-                    ))}
-                  </select>
-                  <select className="input flex-1 min-w-[220px]" value={attribuerCertId}
-                    disabled={!attribuerConsultantId}
-                    onChange={e => setAttribuerCertId(e.target.value)}>
-                    <option value="">
-                      {attribuerConsultantId
-                        ? (certsDuConsultant.length ? '— Choisir une certification —' : 'Aucune certification disponible')
-                        : '— Choisir un consultant d\'abord —'}
+              <div className="flex items-center gap-2 flex-wrap border-t border-slate-200 pt-2">
+                <label className="label mb-0 shrink-0">Attribuer à</label>
+                <select className="input flex-1 min-w-[180px]" value={attribuerConsultantId}
+                  onChange={e => handleAttribuerConsultantChange(e.target.value)}>
+                  <option value="">— Choisir un consultant —</option>
+                  {consultantsList.map(c => (
+                    <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
+                  ))}
+                </select>
+                <select className="input flex-1 min-w-[220px]" value={attribuerCertId}
+                  disabled={!attribuerConsultantId}
+                  onChange={e => setAttribuerCertId(e.target.value)}>
+                  <option value="">
+                    {attribuerConsultantId
+                      ? (certsDuConsultant.length ? '— Choisir une certification —' : 'Aucune certification disponible')
+                      : '— Choisir un consultant d\'abord —'}
+                  </option>
+                  {certsDuConsultant.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.nom_certification} ({c.statut}){c.voucher_id ? ' — a déjà un voucher !' : ''}
                     </option>
-                    {certsDuConsultant.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.nom_certification} ({c.statut}){c.voucher_id ? ' — a déjà un voucher !' : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <button onClick={() => handleAttribuer(v.id)} disabled={!attribuerCertId || attribuant}
-                    className="btn-primary text-sm py-1.5 px-3 disabled:opacity-50">
-                    {attribuant ? 'Attribution…' : 'Attribuer'}
-                  </button>
-                </div>
-              )}
+                  ))}
+                </select>
+                <button onClick={() => handleAttribuer(v.id)} disabled={!attribuerCertId || attribuant}
+                  className="btn-primary text-sm py-1.5 px-3 disabled:opacity-50">
+                  {attribuant ? 'Attribution…' : 'Attribuer'}
+                </button>
+              </div>
             </div>
           ) : (
             <div key={v.id} className="flex items-center justify-between px-4 py-2.5 text-sm group">
