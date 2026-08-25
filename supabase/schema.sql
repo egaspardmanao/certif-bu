@@ -380,7 +380,7 @@ returns void
 language sql
 security definer
 as $$
-  update consultants set vouchers_annee_civile = 0, updated_at = now();
+  update consultants set vouchers_annee_civile = 0, updated_at = now() where true;
 $$;
 
 -- ============================================================
