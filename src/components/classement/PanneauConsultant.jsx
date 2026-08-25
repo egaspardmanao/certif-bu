@@ -15,8 +15,17 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
   const [uploadOpen, setUploadOpen]   = useState(false)
 
   async function handleDemanderVoucher(certId) {
-    const { data, error } = await supabase.rpc('demander_voucher', { p_certification_id: certId })
-    if (error) { showToast('Erreur lors de la demande.', 'error'); return }
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/voucher/demander', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ certificationId: certId }),
+    })
+    if (!res.ok) { showToast('Erreur lors de la demande.', 'error'); return }
+    const data = await res.json()
     const statut = data?.statut
     const isSuccess = statut === 'attribue'
     showToast(data?.message ?? 'Demande envoyée.', isSuccess ? 'success' : 'info')

@@ -1,0 +1,11 @@
+{
+  "crons": [
+    { "path": "/api/cron/bench-assignment",        "schedule": "0 2 * * *"  },
+    { "path": "/api/cron/bonne-chance",             "schedule": "0 6 * * *"  },
+    { "path": "/api/cron/rappel-certification",     "schedule": "0 7 * * *"  },
+    { "path": "/api/cron/repasse-planifiee",        "schedule": "5 7 * * *"  },
+    { "path": "/api/cron/voucher-expire",           "schedule": "10 7 * * *" },
+    { "path": "/api/cron/voucher-expiration-recap", "schedule": "0 6 1 * *"  },
+    { "path": "/api/cron/reset-vouchers",           "schedule": "0 0 1 1 *"  }
+  ]
+}
