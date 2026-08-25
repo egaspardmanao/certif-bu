@@ -37,9 +37,8 @@ export default function VouchersPanel({ showToast }) {
     if (!consultantId) { setCertsDuConsultant([]); return }
     const { data } = await supabase
       .from('certifications')
-      .select('id, nom_certification, statut')
+      .select('id, nom_certification, statut, voucher_id')
       .eq('consultant_id', consultantId)
-      .is('voucher_id', null)
       .order('nom_certification')
     setCertsDuConsultant(data ?? [])
   }
@@ -182,7 +181,9 @@ export default function VouchersPanel({ showToast }) {
                         : '— Choisir un consultant d\'abord —'}
                     </option>
                     {certsDuConsultant.map(c => (
-                      <option key={c.id} value={c.id}>{c.nom_certification} ({c.statut})</option>
+                      <option key={c.id} value={c.id}>
+                        {c.nom_certification} ({c.statut}){c.voucher_id ? ' — a déjà un voucher !' : ''}
+                      </option>
                     ))}
                   </select>
                   <button onClick={() => handleAttribuer(v.id)} disabled={!attribuerCertId || attribuant}

@@ -37,7 +37,7 @@ function PortailInner() {
       <header className="sticky top-0 z-30 shadow-sm">
         <div className="bg-gradient-to-r from-brand-700 via-brand-600 to-brand-700 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-gold-500/10 to-transparent" />
-          <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6 flex flex-col sm:flex-row items-center gap-2 sm:gap-0 sm:relative">
+          <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6 flex flex-col sm:flex-row items-center sm:justify-center gap-2 sm:gap-0 sm:relative">
             <div className="flex items-center gap-3">
               <span className="text-3xl sm:text-4xl leading-none drop-shadow">🏆</span>
               <h1 className="font-display font-bold text-xl sm:text-3xl text-white leading-none tracking-tight">BU Salesforce Inetum</h1>
