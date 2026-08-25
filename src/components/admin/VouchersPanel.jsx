@@ -12,7 +12,9 @@ export default function VouchersPanel({ showToast }) {
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm] = useState({})
 
-  const [certsEnAttente, setCertsEnAttente] = useState([])
+  const [consultantsList, setConsultantsList] = useState([])
+  const [certsDuConsultant, setCertsDuConsultant] = useState([])
+  const [attribuerConsultantId, setAttribuerConsultantId] = useState('')
   const [attribuerCertId, setAttribuerCertId] = useState('')
   const [attribuant, setAttribuant] = useState(false)
 
@@ -26,17 +28,23 @@ export default function VouchersPanel({ showToast }) {
     setLoading(false)
   }
 
-  async function fetchCertsEnAttente() {
-    const { data } = await supabase
-      .from('certifications')
-      .select('id, nom_certification, consultants(prenom, nom)')
-      .in('statut', ['Planifiée', 'À retenter'])
-      .is('voucher_id', null)
-      .order('nom_certification')
-    setCertsEnAttente(data ?? [])
+  async function fetchConsultantsList() {
+    const { data } = await supabase.from('consultants').select('id, prenom, nom').eq('actif', true).order('nom')
+    setConsultantsList(data ?? [])
   }
 
-  useEffect(() => { fetchVouchers(); fetchCertsEnAttente() }, [])
+  async function fetchCertsDuConsultant(consultantId) {
+    if (!consultantId) { setCertsDuConsultant([]); return }
+    const { data } = await supabase
+      .from('certifications')
+      .select('id, nom_certification, statut')
+      .eq('consultant_id', consultantId)
+      .is('voucher_id', null)
+      .order('nom_certification')
+    setCertsDuConsultant(data ?? [])
+  }
+
+  useEffect(() => { fetchVouchers(); fetchConsultantsList() }, [])
 
   async function handleAdd(e) {
     e.preventDefault()
@@ -63,7 +71,15 @@ export default function VouchersPanel({ showToast }) {
       date_debut_validite: v.date_debut_validite ?? '',
       date_fin_validite: v.date_fin_validite ?? '',
     })
+    setAttribuerConsultantId('')
     setAttribuerCertId('')
+    setCertsDuConsultant([])
+  }
+
+  function handleAttribuerConsultantChange(consultantId) {
+    setAttribuerConsultantId(consultantId)
+    setAttribuerCertId('')
+    fetchCertsDuConsultant(consultantId)
   }
 
   async function handleAttribuer(voucherId) {
@@ -80,7 +96,6 @@ export default function VouchersPanel({ showToast }) {
     setEditingId(null)
     showToast('Voucher attribué.', 'success')
     fetchVouchers()
-    fetchCertsEnAttente()
   }
 
   async function handleSaveEdit(id) {
@@ -151,13 +166,23 @@ export default function VouchersPanel({ showToast }) {
               {v.statut === 'Disponible' && (
                 <div className="flex items-center gap-2 flex-wrap border-t border-slate-200 pt-2">
                   <label className="label mb-0 shrink-0">Attribuer à</label>
+                  <select className="input flex-1 min-w-[180px]" value={attribuerConsultantId}
+                    onChange={e => handleAttribuerConsultantChange(e.target.value)}>
+                    <option value="">— Choisir un consultant —</option>
+                    {consultantsList.map(c => (
+                      <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
+                    ))}
+                  </select>
                   <select className="input flex-1 min-w-[220px]" value={attribuerCertId}
+                    disabled={!attribuerConsultantId}
                     onChange={e => setAttribuerCertId(e.target.value)}>
-                    <option value="">— Choisir une certification en attente —</option>
-                    {certsEnAttente.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.consultants?.prenom} {c.consultants?.nom} — {c.nom_certification}
-                      </option>
+                    <option value="">
+                      {attribuerConsultantId
+                        ? (certsDuConsultant.length ? '— Choisir une certification —' : 'Aucune certification disponible')
+                        : '— Choisir un consultant d\'abord —'}
+                    </option>
+                    {certsDuConsultant.map(c => (
+                      <option key={c.id} value={c.id}>{c.nom_certification} ({c.statut})</option>
                     ))}
                   </select>
                   <button onClick={() => handleAttribuer(v.id)} disabled={!attribuerCertId || attribuant}
