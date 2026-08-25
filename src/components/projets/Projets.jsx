@@ -43,7 +43,7 @@ function CarteProjet({ projet, onClick }) {
         <span className="text-xs text-slate-500 shrink-0">{consultants.length} consultant{consultants.length > 1 ? 's' : ''}</span>
       </div>
       {projet.responsable && (
-        <div className="text-xs text-slate-500 mb-1">Resp. : {projet.responsable.prenom} {projet.responsable.nom}</div>
+        <div className="text-xs text-gold-500 font-semibold mb-1">👤 {projet.responsable.prenom} {projet.responsable.nom}</div>
       )}
       {noms && (
         <div className="text-xs text-slate-500 line-clamp-2">{noms}</div>
@@ -153,7 +153,7 @@ function PanneauProjet({ projet, allConsultants, toutesLesPersonnes, onClose, on
               <div className="section-title">Responsable</div>
               <div className="flex items-center gap-2">
                 <Avatar consultant={projet.responsable} size="sm" />
-                <span className="text-sm text-slate-900">{projet.responsable.prenom} {projet.responsable.nom}</span>
+                <span className="text-sm font-semibold text-gold-500">{projet.responsable.prenom} {projet.responsable.nom}</span>
               </div>
             </div>
           )}
