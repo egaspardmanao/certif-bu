@@ -12,20 +12,22 @@ function Podium({ top3 }) {
   if (top3.length < 1) return null
   const [first, second, third] = top3
   const steps = [
-    { consultant: second, place: 2, height: 'h-24', color: 'bg-slate-600', medal: '🥈' },
-    { consultant: first,  place: 1, height: 'h-36', color: 'bg-gold-500',  medal: '🥇' },
-    { consultant: third,  place: 3, height: 'h-16', color: 'bg-orange-700', medal: '🥉' },
+    { consultant: second, place: 2, height: 'h-20', gradient: 'from-slate-300 to-slate-400', ring: 'ring-slate-300', medal: '🥈' },
+    { consultant: first,  place: 1, height: 'h-28', gradient: 'from-yellow-400 to-amber-500', ring: 'ring-amber-400', medal: '🥇' },
+    { consultant: third,  place: 3, height: 'h-14', gradient: 'from-orange-500 to-orange-700', ring: 'ring-orange-500', medal: '🥉' },
   ]
   return (
-    <div className="flex items-end justify-center gap-2 mb-8 pt-4">
-      {steps.map(({ consultant, place, height, color, medal }) => consultant && (
+    <div className="flex items-end justify-center gap-3 mb-8 pt-4">
+      {steps.map(({ consultant, place, height, gradient, ring, medal }) => consultant && (
         <div key={place} className="flex flex-col items-center gap-2">
-          <Avatar consultant={consultant} size="lg" />
+          <div className={`rounded-full ring-4 ${ring} ring-offset-2 ring-offset-slate-50`}>
+            <Avatar consultant={consultant} size="lg" />
+          </div>
           <div className="text-center">
             <div className="text-sm font-semibold text-slate-900">{consultant.prenom}</div>
             <div className="text-xs text-slate-500">{consultant.nb_certifications} certif.</div>
           </div>
-          <div className={`${height} ${color} podium-bar w-20 rounded-t-lg flex items-start justify-center pt-2 text-xl`}>
+          <div className={`${height} w-24 rounded-t-xl bg-gradient-to-b ${gradient} shadow-md flex items-start justify-center pt-3 text-2xl podium-bar`}>
             {medal}
           </div>
         </div>
