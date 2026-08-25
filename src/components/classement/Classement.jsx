@@ -7,6 +7,7 @@ import AjouterConsultantModal from './AjouterConsultantModal'
 import CertGroupCards from './CertGroupCards'
 import { useToast } from '../shared/Toast'
 import Toast from '../shared/Toast'
+import { formatDate } from '../../lib/utils'
 
 function Podium({ top3 }) {
   if (top3.length < 1) return null
@@ -129,8 +130,8 @@ export default function Classement() {
                       </div>
                     </td>
                     <td className="px-3 py-2.5 text-center font-bold text-brand-400">{c.nb_certifications}</td>
-                    <td className="px-3 py-2.5 text-slate-500 text-xs">{c.prochaine_planifiee ?? '—'}</td>
-                    <td className="px-3 py-2.5 text-slate-500 text-xs">{c.derniere_obtention ?? '—'}</td>
+                    <td className="px-3 py-2.5 text-slate-500 text-xs">{c.prochaine_planifiee ? formatDate(c.prochaine_planifiee) : '—'}</td>
+                    <td className="px-3 py-2.5 text-slate-500 text-xs">{c.derniere_obtention ? formatDate(c.derniere_obtention) : '—'}</td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
