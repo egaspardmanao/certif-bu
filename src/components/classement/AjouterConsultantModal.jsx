@@ -24,11 +24,17 @@ export default function AjouterConsultantModal({ consultant, consultants, onClos
       manager_id: form.manager_id || null,
       birthdate:  form.birthdate || null,
     }
-    const { error } = consultant
-      ? await supabase.from('consultants').update(payload).eq('id', consultant.id)
-      : await supabase.from('consultants').insert({ ...payload, actif: true, hide_for_community: false })
-    if (error) { setError('Erreur : ' + error.message); setSaving(false); return }
-    onAdded()
+    if (consultant) {
+      const { error } = await supabase.from('consultants').update(payload).eq('id', consultant.id)
+      if (error) { setError('Erreur : ' + error.message); setSaving(false); return }
+      onAdded()
+    } else {
+      const { data, error } = await supabase.from('consultants')
+        .insert({ ...payload, actif: true, hide_for_community: false })
+        .select('id').single()
+      if (error) { setError('Erreur : ' + error.message); setSaving(false); return }
+      onAdded(data.id)
+    }
   }
 
   return (

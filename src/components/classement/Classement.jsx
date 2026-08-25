@@ -4,6 +4,7 @@ import { useClassement, useToutesLesPersonnes } from '../../hooks/useClassement'
 import Avatar from '../shared/Avatar'
 import PanneauConsultant from './PanneauConsultant'
 import AjouterConsultantModal from './AjouterConsultantModal'
+import CertGroupCards from './CertGroupCards'
 import { useToast } from '../shared/Toast'
 import Toast from '../shared/Toast'
 
@@ -40,6 +41,7 @@ export default function Classement() {
   const [sortField, setSortField] = useState('nb_certifications')
   const [sortAsc, setSortAsc]     = useState(false)
   const [selected, setSelected]   = useState(null)
+  const [openPhotoStep, setOpenPhotoStep] = useState(false)
   const [addOpen, setAddOpen]     = useState(false)
   const { toast, show, hide }     = useToast()
 
@@ -127,14 +129,18 @@ export default function Classement() {
         </div>
       )}
 
+      {/* Cartes titulaires par certification / accréditation */}
+      {!loading && <CertGroupCards consultants={consultants} />}
+
       {/* Panneau détail consultant */}
       {selected && (
         <PanneauConsultant
           consultantId={selected}
-          onClose={() => setSelected(null)}
+          onClose={() => { setSelected(null); setOpenPhotoStep(false) }}
           onUpdated={() => { refetch(); show('Mis à jour !', 'success') }}
           showToast={show}
           toutesLesPersonnes={toutesLesPersonnes}
+          openPhotoStep={openPhotoStep}
         />
       )}
 
@@ -143,7 +149,12 @@ export default function Classement() {
         <AjouterConsultantModal
           consultants={toutesLesPersonnes}
           onClose={() => setAddOpen(false)}
-          onAdded={() => { setAddOpen(false); refetch(); show('Consultant ajouté !', 'success') }}
+          onAdded={(newId) => {
+            setAddOpen(false)
+            refetch()
+            show('Consultant ajouté !', 'success')
+            if (newId) { setSelected(newId); setOpenPhotoStep(true) }
+          }}
         />
       )}
 

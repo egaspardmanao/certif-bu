@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Plus, Ticket, Edit2, Trash2 } from 'lucide-react'
 import { useConsultant } from '../../hooks/useClassement'
+import { useProjets } from '../../hooks/useProjets'
 import Avatar from '../shared/Avatar'
 import { StatutBadge, TypeBadge } from '../shared/Badge'
 import Modal from '../shared/Modal'
@@ -10,11 +11,13 @@ import { CERT_STATUTS } from '../../lib/constants'
 import AjouterCertificationModal from './AjouterCertificationModal'
 import AjouterConsultantModal from './AjouterConsultantModal'
 
-export default function PanneauConsultant({ consultantId, onClose, onUpdated, showToast, toutesLesPersonnes }) {
+export default function PanneauConsultant({ consultantId, onClose, onUpdated, showToast, toutesLesPersonnes, openPhotoStep }) {
   const { consultant, loading, refetch } = useConsultant(consultantId)
+  const { projets } = useProjets()
   const [addCertOpen, setAddCertOpen] = useState(false)
-  const [uploadOpen, setUploadOpen]   = useState(false)
+  const [uploadOpen, setUploadOpen]   = useState(!!openPhotoStep)
   const [editOpen, setEditOpen]       = useState(false)
+  const [addMissionOpen, setAddMissionOpen] = useState(false)
 
   async function handleDemanderVoucher(certId) {
     const { data: { session } } = await supabase.auth.getSession()
@@ -35,11 +38,20 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
   }
 
   async function handleDeleteCert(certId) {
-    const motdepasse = window.prompt('Confirmation : tape "SUPPRIMER" pour confirmer la suppression.')
-    if (motdepasse !== 'SUPPRIMER') return
+    const motdepasse = window.prompt('Suppression d\'une certification : merci de saisir le mot de passe de confirmation.')
+    if (motdepasse === null) return
+    if (motdepasse !== 'justdoit') { showToast('Mot de passe incorrect. Suppression annulée.', 'error'); return }
     await supabase.from('certifications').delete().eq('id', certId)
     showToast('Certification supprimée.', 'success')
     refetch()
+  }
+
+  async function handleAddMission(projetId) {
+    await supabase.from('missions').insert({ consultant_id: consultant.id, projet_id: projetId })
+    setAddMissionOpen(false)
+    showToast('Mission ajoutée.', 'success')
+    refetch()
+    onUpdated()
   }
 
   async function handlePhotoUpload(e) {
@@ -86,18 +98,22 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
 
         <div className="flex-1 p-5 space-y-6">
           {/* Missions */}
-          {missions.length > 0 && (
-            <div>
-              <div className="section-title">Projets actuels</div>
-              <div className="flex flex-wrap gap-2">
-                {missions.map(m => (
-                  <span key={m.id} className="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full">
-                    {m.projets?.nom}
-                  </span>
-                ))}
-              </div>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="section-title mb-0">Projets actuels</div>
+              <button onClick={() => setAddMissionOpen(true)} className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1">
+                <Plus size={12} /> Ajouter une mission
+              </button>
             </div>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {missions.length === 0 && <p className="text-slate-500 text-sm">Aucun projet.</p>}
+              {missions.map(m => (
+                <span key={m.id} className="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full">
+                  {m.projets?.nom}
+                </span>
+              ))}
+            </div>
+          </div>
 
           {/* Certifications */}
           <div>
@@ -151,6 +167,22 @@ export default function PanneauConsultant({ consultantId, onClose, onUpdated, sh
           onClose={() => setEditOpen(false)}
           onAdded={() => { setEditOpen(false); refetch(); onUpdated(); showToast('Consultant mis à jour !', 'success') }}
         />
+      )}
+
+      {/* Modale ajout mission */}
+      {addMissionOpen && consultant && (
+        <Modal title="Ajouter une mission" onClose={() => setAddMissionOpen(false)}>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {projets
+              .filter(p => !p.termine && !missions.some(m => m.projet_id === p.id))
+              .map(p => (
+                <button key={p.id} onClick={() => handleAddMission(p.id)}
+                  className="card w-full p-3 text-left hover:border-brand-500/50 transition-colors">
+                  {p.nom}
+                </button>
+              ))}
+          </div>
+        </Modal>
       )}
 
       {/* Modale upload photo */}

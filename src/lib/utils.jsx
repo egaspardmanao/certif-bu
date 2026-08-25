@@ -53,3 +53,19 @@ export function groupByCertification(consultantsAvecCertifs) {
   )
   return groups
 }
+
+// Cartes cliquables "titulaires d'une certification/accréditation" (équivalent buildCertGroups() du LWC).
+// Regroupe par nom, trie chaque groupe par date d'obtention décroissante, puis les groupes
+// par nombre de titulaires décroissant (à égalité, ordre alphabétique).
+export function buildCertGroups(consultantsAvecCertifs, type) {
+  const groups = groupByCertification(consultantsAvecCertifs)
+  return Object.entries(groups)
+    .filter(([, holders]) => holders[0]?.type === type)
+    .map(([nom, holders]) => ({
+      nom,
+      count: holders.length,
+      countLabel: `${holders.length} certifié${holders.length > 1 ? 's' : ''}`,
+      holders,
+    }))
+    .sort((a, b) => b.count - a.count || a.nom.localeCompare(b.nom, 'fr'))
+}
